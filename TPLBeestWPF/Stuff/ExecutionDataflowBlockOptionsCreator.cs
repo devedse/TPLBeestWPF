@@ -6,9 +6,9 @@ namespace TPLBeestWPF.Stuff
 {
     public static class ExecutionDataflowBlockOptionsCreator
     {
-        public static ExecutionDataflowBlockOptions SynchronizeForUiThread(ExecutionDataflowBlockOptions executionDataflowBlockOptions)
+        public static ExecutionDataflowBlockOptions SynchronizeForUiThread(bool actuallyDoIt, ExecutionDataflowBlockOptions executionDataflowBlockOptions)
         {
-            if (SynchronizationContext.Current != null)
+            if (actuallyDoIt && SynchronizationContext.Current != null)
             {
                 executionDataflowBlockOptions.TaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
             }

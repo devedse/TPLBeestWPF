@@ -26,6 +26,8 @@ namespace TPLBeestWPF.Stuff
 
         public async Task Go()
         {
+            bool shouldSync = false;
+
             var block1 = new TransformBlock<string, ListBoxThing>(input =>
             {
                 Console.WriteLine($"1: {input}");
@@ -46,7 +48,7 @@ namespace TPLBeestWPF.Stuff
                 Console.WriteLine($"2: {input}\t\t\tStarting {input} now (ui logging)");
                 _logger.ThingChanged(input);
                 return input;
-            }, ExecutionDataflowBlockOptionsCreator.SynchronizeForUiThread(new ExecutionDataflowBlockOptions()
+            }, ExecutionDataflowBlockOptionsCreator.SynchronizeForUiThread(shouldSync, new ExecutionDataflowBlockOptions()
             {
                 MaxDegreeOfParallelism = 1,
                 BoundedCapacity = 1,
@@ -72,7 +74,7 @@ namespace TPLBeestWPF.Stuff
                 Console.WriteLine($"4: {input}");
                 input.Color = Brushes.LightGreen;
                 _logger.ThingChanged(input);
-            }, ExecutionDataflowBlockOptionsCreator.SynchronizeForUiThread(new ExecutionDataflowBlockOptions()
+            }, ExecutionDataflowBlockOptionsCreator.SynchronizeForUiThread(shouldSync, new ExecutionDataflowBlockOptions()
             {
                 MaxDegreeOfParallelism = 1,
                 BoundedCapacity = 1,
