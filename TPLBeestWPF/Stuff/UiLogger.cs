@@ -1,4 +1,6 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Threading;
 
 namespace TPLBeestWPF.Stuff
 {
@@ -13,6 +15,8 @@ namespace TPLBeestWPF.Stuff
 
         public void ThingChanged(ListBoxThing thing)
         {
+            Console.WriteLine($"({Thread.CurrentThread.ManagedThreadId}) Changed: {thing.Path}");
+
             if (Items.Contains(thing))
             {
                 var pos = Items.IndexOf(thing);

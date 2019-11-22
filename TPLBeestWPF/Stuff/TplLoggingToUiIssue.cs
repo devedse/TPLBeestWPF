@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using System.Windows.Media;
@@ -24,11 +25,22 @@ namespace TPLBeestWPF.Stuff
             }
         }
 
+
         public async Task Go()
         {
+            var progress = new Progress<ListBoxThing>();
+            progress.ProgressChanged += (sender, e) =>
+            {
+                _logger.ThingChanged(e);
+            };
+
+            bool shouldSync = false;
+
+
+
             var block1 = new TransformBlock<string, ListBoxThing>(input =>
             {
-                Console.WriteLine($"1: {input}");
+                Console.WriteLine($"({Thread.CurrentThread.ManagedThreadId}) 1: {input}");
                 var newItem = new ListBoxThing()
                 {
                     Path = input
@@ -43,10 +55,10 @@ namespace TPLBeestWPF.Stuff
 
             var block2 = new TransformBlock<ListBoxThing, ListBoxThing>(input =>
             {
-                Console.WriteLine($"2: {input}\t\t\tStarting {input} now (ui logging)");
-                _logger.ThingChanged(input);
+                Console.WriteLine($"({Thread.CurrentThread.ManagedThreadId}) 2: {input}\t\t\tStarting {input} now (ui logging)");
+                //_logger.ThingChanged(input);
                 return input;
-            }, ExecutionDataflowBlockOptionsCreator.SynchronizeForUiThread(new ExecutionDataflowBlockOptions()
+            }, ExecutionDataflowBlockOptionsCreator.SynchronizeForUiThread(shouldSync, new ExecutionDataflowBlockOptions()
             {
                 MaxDegreeOfParallelism = 1,
                 BoundedCapacity = 1,
@@ -56,9 +68,15 @@ namespace TPLBeestWPF.Stuff
 
             var block3 = new TransformBlock<ListBoxThing, ListBoxThing>(async input =>
             {
-                Console.WriteLine($"3 start: {input}");
+                ((IProgress<ListBoxThing>)progress).Report(input);
+
+                Console.WriteLine($"({Thread.CurrentThread.ManagedThreadId}) 3 start: {input}");
                 await Task.Delay(5000);
-                Console.WriteLine($"3 end: {input}");
+                Console.WriteLine($"({Thread.CurrentThread.ManagedThreadId}) 3 end: {input}");
+                input.Color = Brushes.LightGreen;
+
+                ((IProgress<ListBoxThing>)progress).Report(input);
+
                 return input;
             }, new ExecutionDataflowBlockOptions()
             {
@@ -69,10 +87,9 @@ namespace TPLBeestWPF.Stuff
 
             var block4 = new ActionBlock<ListBoxThing>(input =>
             {
-                Console.WriteLine($"4: {input}");
-                input.Color = Brushes.LightGreen;
-                _logger.ThingChanged(input);
-            }, ExecutionDataflowBlockOptionsCreator.SynchronizeForUiThread(new ExecutionDataflowBlockOptions()
+                Console.WriteLine($"({Thread.CurrentThread.ManagedThreadId}) 4: {input}");
+                //_logger.ThingChanged(input);
+            }, ExecutionDataflowBlockOptionsCreator.SynchronizeForUiThread(shouldSync, new ExecutionDataflowBlockOptions()
             {
                 MaxDegreeOfParallelism = 1,
                 BoundedCapacity = 1,
@@ -105,5 +122,7 @@ namespace TPLBeestWPF.Stuff
             await block4.Completion;
             Console.WriteLine("Done");
         }
+
+
     }
 }
