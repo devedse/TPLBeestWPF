@@ -68,14 +68,14 @@ namespace TPLBeestWPF.Stuff
 
             var block3 = new TransformBlock<ListBoxThing, ListBoxThing>(async input =>
             {
+                Console.WriteLine($"({Thread.CurrentThread.ManagedThreadId}) 3 start: {input.Path}");
                 ((IProgress<ListBoxThing>)progress).Report(input);
 
-                Console.WriteLine($"({Thread.CurrentThread.ManagedThreadId}) 3 start: {input}");
                 await Task.Delay(5000);
-                Console.WriteLine($"({Thread.CurrentThread.ManagedThreadId}) 3 end: {input}");
                 input.Color = Brushes.LightGreen;
 
                 ((IProgress<ListBoxThing>)progress).Report(input);
+                Console.WriteLine($"({Thread.CurrentThread.ManagedThreadId}) 3 end: {input.Path}");
 
                 return input;
             }, new ExecutionDataflowBlockOptions()
